@@ -1,8 +1,8 @@
-### AWS AppSync blog-app
+## AWS AppSync blog-app
 Created upon following the udemy course:
 Deploy a Serverless GraphQL & React JS based Javascript application in the AWS Cloud using AWS AppSync and AWS Amplify
 
-## Available Scripts
+### Available Scripts
 
 In the project directory, you can run:
 
