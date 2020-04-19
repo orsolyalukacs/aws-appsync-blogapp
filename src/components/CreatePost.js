@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { API, graphqlOperation } from "aws-amplify";
+import { API, graphqlOperation, Auth } from "aws-amplify";
 import { createPost } from "../graphql/mutations";
 
 class CreatePost extends Component {
@@ -11,15 +11,23 @@ class CreatePost extends Component {
   };
 
   componentDidMount = async () => {
-    //TODO: TBA
+    //TODO: Auth
+    await Auth.currentUserInfo().then((user) => {
+      this.setState({
+        postOwnerId: user.attributes.sub,
+        postOwnerUsername: user.username,
+      });
+      // console.log("Curr: User: ", user.username);
+      // console.log("Attr.Sub: User: ", user.attributes.sub);
+    });
   };
 
   //Create input object when submitting the form
   handleAddPost = async (event) => {
     event.preventDefault();
     const input = {
-      postOwnerId: "orchie123", //this.state.postOwnerId,
-      postOwnerUsername: "orchie", //this.state.postOwnerUsername,
+      postOwnerId: this.state.postOwnerId,
+      postOwnerUsername: this.state.postOwnerUsername,
       postTitle: this.state.postTitle,
       postBody: this.state.postBody,
       createdAt: new Date().toISOString(),

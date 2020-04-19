@@ -33,9 +33,8 @@ class DisplayPosts extends Component {
     });
   };
 
-
   //Unmount the subscription listener
-  componentWillUnmount(){
+  componentWillUnmount() {
     this.createPostListener.unsubscribe();
   }
 
