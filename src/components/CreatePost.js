@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import { API, graphqlOperation } from "aws-amplify";
+import { createPost } from "../graphql/mutations";
 
 class CreatePost extends Component {
   state = {
@@ -12,16 +14,29 @@ class CreatePost extends Component {
     //TODO: TBA
   };
 
-  handleAddPost = async event => {
+  //Create input object when submitting the form
+  handleAddPost = async (event) => {
     event.preventDefault();
     const input = {
-        postOwnerId: this.state.postOwnerId,
-        postOwnerUsername: this.state.postOwnerUsername,
-        postTitle: this.state.postTitle,
-        postBody: this.state.postBody,
-        createdAt: new Date().toISOString()
-    }
-  }
+      postOwnerId: "orchie123", //this.state.postOwnerId,
+      postOwnerUsername: "orchie", //this.state.postOwnerUsername,
+      postTitle: this.state.postTitle,
+      postBody: this.state.postBody,
+      createdAt: new Date().toISOString(),
+    };
+
+    //Pass the input and the createPost mutation to graphQL API
+    await API.graphql(graphqlOperation(createPost, { input }));
+
+    //Clear everything up
+    this.setState({ postTitle: "", postBody: "" });
+  };
+
+  //Put each input value into an array
+  handleChangePost = (event) =>
+    this.setState({
+      [event.target.name]: event.target.value,
+    });
 
   render() {
     return (
@@ -32,6 +47,8 @@ class CreatePost extends Component {
           placeholder="Title"
           name="postTitle"
           required
+          value={this.state.postTitle}
+          onChange={this.handleChangePost}
         />
         <textarea
           type="text"
@@ -40,6 +57,8 @@ class CreatePost extends Component {
           cols="40"
           required
           placeholder="New Blog Post"
+          value={this.state.postBody}
+          onChange={this.handleChangePost}
         />
         <input type="submit" className="btn" style={{ fontSize: "19px" }} />
       </form>
