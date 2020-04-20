@@ -10,6 +10,7 @@ class DisplayPosts extends Component {
     posts: [],
   };
 
+  //TODO: move subscriptions to componentDidUpdate
   componentDidMount = async () => {
     this.getPosts();
     //Get all the post data once a new post is created
@@ -78,7 +79,7 @@ class DisplayPosts extends Component {
 
           <span>
             <DeletePost data={post} />
-            <EditPost />
+            <EditPost {...post} />
           </span>
         </div>
       );
