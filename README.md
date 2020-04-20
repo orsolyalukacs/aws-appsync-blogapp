@@ -1,6 +1,7 @@
 ## AWS AppSync blog-app
 Created upon following the udemy course:
 Deploy a Serverless GraphQL & React JS based Javascript application in the AWS Cloud using AWS AppSync and AWS Amplify
+I updated the original code by removing unsafe React lifecycle methods.
 
 ### Available Scripts
 
