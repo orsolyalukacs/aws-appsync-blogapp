@@ -57,7 +57,7 @@ class EditPost extends Component {
     this.setState({ show: !this.state.show });
   }
 
-  UNSAFE_componentWillMount = async () => {
+  componentDidMount = async () => {
     await Auth.currentUserInfo().then((user) => {
       this.setState({
         postOwnerId: user.attributes.sub,
