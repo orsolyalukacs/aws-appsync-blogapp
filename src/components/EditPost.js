@@ -6,8 +6,8 @@ class EditPost extends Component {
   state = {
     show: false, //show popup window or not
     id: "",
-    postOwnerId: "",
-    postOwnerUsername: "",
+    postOwnerId: "123",
+    postOwnerUsername: "orchie",
     postTitle: "",
     postBody: "",
     postData: {
@@ -49,19 +49,19 @@ class EditPost extends Component {
       postOwnerUsername: this.state.postOwnerUsername,
       postTitle: this.state.postData.postTitle,
       postBody: this.state.postData.postBody,
-    };
+    }
 
     await API.graphql(graphqlOperation(updatePost, { input }));
 
     //force close the modal once we have updated our data
     this.setState({ show: !this.state.show });
-  };
+  }
 
-  componentWillMount = async () => {
+  UNSAFE_componentWillMount = async () => {
     await Auth.currentUserInfo().then((user) => {
       this.setState({
         postOwnerId: user.attributes.sub,
-        postOwnerUserName: user.username,
+        postOwnerUserName: user.username
       });
     });
   };
