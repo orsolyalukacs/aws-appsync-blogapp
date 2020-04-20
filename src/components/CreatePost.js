@@ -11,7 +11,6 @@ class CreatePost extends Component {
   };
 
   componentDidMount = async () => {
-    //TODO: Auth
     await Auth.currentUserInfo().then((user) => {
       this.setState({
         postOwnerId: user.attributes.sub,
