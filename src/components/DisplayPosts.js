@@ -20,6 +20,8 @@ class DisplayPosts extends Component {
     posts: [],
     ownerId: "",
     ownerUsername: "",
+    errorMessage: "",
+    postLikedBy: [],
     isHovering: false,
   };
 
@@ -136,7 +138,7 @@ class DisplayPosts extends Component {
 
   //Keep track if user has liked a post or not
   likedPost = (postId) => {
-    for (let post of this.state.post) {
+    for (let post of this.state.posts) {
       if (post.id === postId) {
         if (post.postOwnerId === this.state.ownerId) return true;
         for (let like of post.likes.items) {
@@ -149,24 +151,31 @@ class DisplayPosts extends Component {
   };
 
   handleLike = async (postId) => {
-    const input = {
-      numberLikes: 1,
-      likeOwnerId: this.state.ownerId,
-      likeOwnerUsername: this.state.ownerUsername,
-      likePostId: postId,
-    };
+    if (this.likedPost(postId)) {
+      return this.setState({ errorMessage: "Can't like your Own post." });
+    } else {
+      const input = {
+        numberLikes: 1,
+        likeOwnerId: this.state.ownerId,
+        likeOwnerUsername: this.state.ownerUsername,
+        likePostId: postId,
+      };
 
-    try {
-      const result = await API.graphql(graphqlOperation(createLike, { input }));
+      try {
+        const result = await API.graphql(
+          graphqlOperation(createLike, { input })
+        );
 
-      console.log("liked: ", result.data);
-    } catch (error) {
-      console.error(error);
+        console.log("liked: ", result.data);
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
   render() {
     const { posts } = this.state;
+    let loggedInUser = this.state.ownerId;
 
     return posts.map((post) => {
       return (
@@ -184,14 +193,17 @@ class DisplayPosts extends Component {
           <br />
 
           <span>
-            <DeletePost data={post} />
-            <EditPost {...post} />
+            {/* Only the post owner can delete or edit their post */}
+            {post.postOwnerId === loggedInUser && <DeletePost data={post} />}
+
+            {post.postOwnerId === loggedInUser && <EditPost {...post} />}
 
             <span>
+              <p className="alert">
+                {post.postOwnerId === loggedInUser && this.state.errorMessage}
+              </p>
               <p onClick={() => this.handleLike(post.id)}>
-                {post.likes.items.length}
-                {" "}
-                <FaThumbsUp />
+                {post.likes.items.length} <FaThumbsUp />
               </p>
             </span>
           </span>
