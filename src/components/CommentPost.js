@@ -2,7 +2,7 @@ import React, { Component } from "react";
 
 class CommentPost extends Component {
   render() {
-    const { content, commentOwnerUsername, createdAt } = this.post.commentData;
+    const { content, commentOwnerUsername, createdAt } = this.props.commentData;
 
     return (
       <div className="comment">
