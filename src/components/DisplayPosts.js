@@ -13,7 +13,8 @@ import {
 import { createLike } from "../graphql/mutations";
 import CreateCommentPost from "./CreateCommentPost";
 import CommentPost from "./CommentPost";
-import { FaThumbsUp } from "react-icons/fa";
+import { FaThumbsUp, FaSadTear } from "react-icons/fa";
+import UsersWhoLikedPost from './UsersWhoLikedPost';
 
 class DisplayPosts extends Component {
   state = {
@@ -150,6 +151,7 @@ class DisplayPosts extends Component {
     return false;
   };
 
+  //Create likes. Make sure post owner cant't like their own posts
   handleLike = async (postId) => {
     if (this.likedPost(postId)) {
       return this.setState({ errorMessage: "Can't like your Own post." });
@@ -171,6 +173,30 @@ class DisplayPosts extends Component {
         console.error(error);
       }
     }
+  };
+
+  //Show who has liked the post
+  handleMouseHover = async (postId) => {
+    this.setState({ isHovering: !this.state.isHovering });
+
+    let innerLikes = this.state.postLikedBy;
+
+    for (let post of this.state.posts) {
+      if (post.id === postId) {
+        for (let like of post.likes.items) {
+          innerLikes.push(like.likeOwnerUsername);
+        }
+      }
+      this.setState({ postLikedBy: innerLikes });
+    }
+
+    console.log("Post liked by: ", this.state.postLikedBy);
+  };
+
+  //Toggle like hover
+  handleMouseHoverLeave = async () => {
+    this.setState({ isHovering: !this.state.isHovering });
+    this.setState({ postLikedBy: [] });
   };
 
   render() {
@@ -202,9 +228,32 @@ class DisplayPosts extends Component {
               <p className="alert">
                 {post.postOwnerId === loggedInUser && this.state.errorMessage}
               </p>
-              <p onClick={() => this.handleLike(post.id)}>
-                {post.likes.items.length} <FaThumbsUp />
+              <p
+                onMouseEnter={() => this.handleMouseHover(post.id)}
+                onMouseLeave={() => this.handleMouseHoverLeave()}
+                onClick={() => this.handleLike(post.id)}
+                style={{
+                  color:
+                    post.likes.items.length > 0 ? "rgb(49, 142, 248)" : "gray",
+                }}
+                className="like-button"
+              >
+                {post.likes.items.length}
+                <FaThumbsUp />
               </p>
+
+              {this.state.isHovering && (
+                <div className="users-liked">
+                  {this.state.postLikedBy.length === 0
+                    ? "Liked by no one. "
+                    : "Liked by: "}
+                  {this.state.postLikedBy.length === 0 ? (
+                    <FaSadTear />
+                  ) : (
+                    <UsersWhoLikedPost data={this.state.postLikedBy} />
+                  )}
+                </div>
+              )}
             </span>
           </span>
 
@@ -219,8 +268,6 @@ class DisplayPosts extends Component {
               <CommentPost key={index} commentData={comment} />
             ))}
           </span>
-
-          <FaThumbsUp />
         </div>
       );
     });
