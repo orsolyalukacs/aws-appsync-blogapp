@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { listPosts } from "../graphql/queries";
-import { API, graphqlOperation } from "aws-amplify";
+import { Auth, API, graphqlOperation } from "aws-amplify";
 import DeletePost from "./DeletePost";
 import EditPost from "./EditPost";
 import {
@@ -8,19 +8,33 @@ import {
   onDeletePost,
   onUpdatePost,
   onCreateComment,
+  onCreateLike,
 } from "../graphql/subscriptions";
+import { createLike } from "../graphql/mutations";
 import CreateCommentPost from "./CreateCommentPost";
 import CommentPost from "./CommentPost";
+import { FaThumbsUp } from "react-icons/fa";
 
 class DisplayPosts extends Component {
   state = {
     posts: [],
+    ownerId: "",
+    ownerUsername: "",
+    isHovering: false,
   };
 
   //TODO: move subscriptions to componentDidUpdate
   componentDidMount = async () => {
     this.getPosts();
-    //Get all the post data once a new post is created
+
+    //Fetch the current user information
+    await Auth.currentUserInfo().then((user) => {
+      this.setState({
+        ownerId: user.attributes.sub,
+        ownerUsername: user.username,
+      });
+    });
+    //Subscribe to post creation
     this.createPostListener = API.graphql(
       graphqlOperation(onCreatePost)
     ).subscribe({
@@ -40,6 +54,7 @@ class DisplayPosts extends Component {
       },
     });
 
+    //Subscribe to post deletions
     this.deletePostListener = API.graphql(
       graphqlOperation(onDeletePost)
     ).subscribe({
@@ -48,11 +63,11 @@ class DisplayPosts extends Component {
         const updatedPosts = this.state.posts.filter(
           (post) => post.id !== deletedPost.id
         );
-
         this.setState({ posts: updatedPosts });
       },
     });
 
+    //Subscribe to post updates
     this.updatePostListener = API.graphql(
       graphqlOperation(onUpdatePost)
     ).subscribe({
@@ -67,11 +82,11 @@ class DisplayPosts extends Component {
           updatePost,
           ...posts.slice(index + 1),
         ];
-
         this.setState({ posts: updatedPosts });
       },
     });
 
+    //Subscribe to comments
     this.createPostCommentListener = API.graphql(
       graphqlOperation(onCreateComment)
     ).subscribe({
@@ -83,7 +98,22 @@ class DisplayPosts extends Component {
             post.comments.items.push(createdComment);
           }
         }
+        this.setState({ posts });
+      },
+    });
 
+    //Subscribe to likes
+    this.createPostLikeListener = API.graphql(
+      graphqlOperation(onCreateLike)
+    ).subscribe({
+      next: (postData) => {
+        const createdLike = postData.value.data.onCreateLike;
+        let posts = [...this.state.posts];
+        for (let post of posts) {
+          if (createdLike.post.id === post.id) {
+            post.likes.items.push(createdLike);
+          }
+        }
         this.setState({ posts });
       },
     });
@@ -95,12 +125,44 @@ class DisplayPosts extends Component {
     this.deletePostListener.unsubscribe();
     this.updatePostListener.unsubscribe();
     this.createPostCommentListener.unsubscribe();
+    this.createPostLikeListener.unsubscribe();
   }
 
   getPosts = async () => {
     const result = await API.graphql(graphqlOperation(listPosts));
     // console.log('All posts: ' + JSON.stringify(result.data.listPosts.items));
     this.setState({ posts: result.data.listPosts.items });
+  };
+
+  //Keep track if user has liked a post or not
+  likedPost = (postId) => {
+    for (let post of this.state.post) {
+      if (post.id === postId) {
+        if (post.postOwnerId === this.state.ownerId) return true;
+        for (let like of post.likes.items) {
+          if (like.likeOwnerId === this.state.ownerId);
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  handleLike = async (postId) => {
+    const input = {
+      numberLikes: 1,
+      likeOwnerId: this.state.ownerId,
+      likeOwnerUsername: this.state.ownerUsername,
+      likePostId: postId,
+    };
+
+    try {
+      const result = await API.graphql(graphqlOperation(createLike, { input }));
+
+      console.log("liked: ", result.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   render() {
@@ -124,6 +186,14 @@ class DisplayPosts extends Component {
           <span>
             <DeletePost data={post} />
             <EditPost {...post} />
+
+            <span>
+              <p onClick={() => this.handleLike(post.id)}>
+                {post.likes.items.length}
+                {" "}
+                <FaThumbsUp />
+              </p>
+            </span>
           </span>
 
           <span>
@@ -137,6 +207,8 @@ class DisplayPosts extends Component {
               <CommentPost key={index} commentData={comment} />
             ))}
           </span>
+
+          <FaThumbsUp />
         </div>
       );
     });
