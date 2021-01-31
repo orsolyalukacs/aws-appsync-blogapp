@@ -3,6 +3,9 @@ Created upon following the udemy course:
 Deploy a Serverless GraphQL & React JS based Javascript application in the AWS Cloud using AWS AppSync and AWS Amplify
 I updated the original code by removing unsafe React lifecycle methods.
 
+The project is deployed here:
+http://blog-app-20200421141722-hostingbucket-blogapi.s3-website.us-east-2.amazonaws.com/
+
 ### Available Scripts
 
 In the project directory, you can run:
