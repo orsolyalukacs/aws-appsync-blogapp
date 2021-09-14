@@ -6,10 +6,15 @@ I updated the original code by removing unsafe React lifecycle methods.
 The project is deployed here:
 http://blog-app-20200421141722-hostingbucket-blogapi.s3-website.us-east-2.amazonaws.com/
 
+### Note
+To run this app locally, you need to install a backend with aws-amplify.
+
 ### Available Scripts
 
 In the project directory, you can run:
 
+### `npm install`
+and then 
 ### `npm start`
 
 Runs the app in the development mode.<br />
